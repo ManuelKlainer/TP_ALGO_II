@@ -108,19 +108,20 @@ public class ColaDePrioridadEstudiantes {
         asegurarCapacidad();
 
         heap[tamaño] = elemento;
+        heap[tamaño].setearPosicionHeap(tamaño);
         subir(tamaño);
         tamaño++;
     }
 
     public Estudiante desencolar() {
-        if (!esVacia()) {
+        if (!estaVacio()) {
             Estudiante menorElemento = heap[0];
 
             heap[0] = heap[tamaño - 1];
             heap[tamaño - 1] = null;
             tamaño --;
 
-            if (!esVacia()) {
+            if (!estaVacio()) {
                 heap[0].setearPosicionHeap(0);
                 bajar(0);
             }
@@ -139,6 +140,10 @@ public class ColaDePrioridadEstudiantes {
 
     public Estudiante proximo() {
         return heap[0];
+    }
+
+    public boolean estaVacio() {
+        return tamaño == 0;
     }
 
     public int tamaño() {
@@ -162,7 +167,45 @@ public class ColaDePrioridadEstudiantes {
         }
     }
 
-    
+
+    // ---------- en la cola, planteo la eliminación de un estudiante específico aprovechando el seteo que teníamos (esto sería el handle?)
+
+    public void eliminar(Estudiante est){
+        int posicionActual = est.obtenerPosicionHeap();
+
+        // bordes para que no pase nada raro
+        if (posicionActual < 0 || posicionActual >= tamaño){return;}
+
+        // si la posición está tan abajo se elimina direcctamente 
+        if (posicionActual == tamaño - 1){
+            heap[tamaño - 1] = null;
+            tamaño --;
+        } // si no, hay que hacer un swap 
+        else{
+            swap(posicionActual, tamaño - 1);
+
+            // y hacer lo mismo 
+            heap[tamaño - 1] = null;
+            tamaño --;
+
+            // ahora lo que pasa es que en la posicionActual hay alguien más (por el swap) 
+
+            if (posicionActual < tamaño){
+                int padre = obtenerIndicePadre(posicionActual);
+                if (posicionActual > 0 && heap[posicionActual].compareTo(heap[padre]) < 0){
+                    subir(posicionActual);
+                }
+                else{
+                    bajar(posicionActual);
+                }
+                
+            }
+        }
+        
+        // eliminar la posición del heap
+        est.setearPosicionHeap(-1);
+    }
+
 
     private int obtenerIndicePadre(int i) { return (i - 1) / 2; }
     private int obtenerIndiceHijoIzquierdo(int i) { return 2 * i + 1; }

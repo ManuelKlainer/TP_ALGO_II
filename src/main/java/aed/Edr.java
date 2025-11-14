@@ -9,8 +9,8 @@ public class Edr {
     private int[] examenCanonico;
     private boolean[] copiones;
     private final int LadoAula;
-    private final int R;
-    private final int E;
+    private final int R; // cant respuestas 
+    private final int E; // cant estudiantes
 
     public Edr(int LadoAula, int Cant_estudiantes, int[] ExamenCanonico) {
         this.LadoAula = LadoAula;
@@ -21,11 +21,11 @@ public class Edr {
         this.aula = new Estudiante[LadoAula][LadoAula];
         this.examenCanonico = new int[this.R];
 
-        for (int i = 0; i < this.R; i++) {
+        for (int i = 0; i < this.R; i++) { // -- O(R)
             this.examenCanonico[i] = ExamenCanonico[i];
         }
 
-        for (int i = 0; i < Cant_estudiantes; i++) {
+        for (int i = 0; i < Cant_estudiantes; i++) { // -- O(E)
             Estudiante est = new Estudiante(i, this.R);
 
 
@@ -50,13 +50,14 @@ public class Edr {
 
     public double[] notas() {
         double[] notas = new double[this.E];
-        for (int i = 0; i < this.E; i++) {
+        for (int i = 0; i < this.E; i++) { // O(E)
             notas[i] = this.estudiantes[i].obtenerNota();
         }
         return notas;
     }
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
+
 
 
 
@@ -185,6 +186,10 @@ public class Edr {
             indMejorVecino = 1;
         }
         
+        // --------------------------------------    
+        if (indMejorVecino == -1){return;}
+        // --------------------------------------
+
 
         int indicePreguntaACopiar = primerRespuestaCopiableVecinos[indMejorVecino];
         int respuestaCopiada = -1;
@@ -205,6 +210,7 @@ public class Edr {
     }
 
 
+
 //-----------------------------------------------RESOLVER----------------------------------------------------------------
 
 
@@ -212,10 +218,12 @@ public class Edr {
 
     public void resolver(int id_estudiante, int NroEjercicio, int res) {
         Estudiante estudiante = this.estudiantes[id_estudiante];
-        estudiante.resolverEjercicio(NroEjercicio, res, examenCanonico);
+        if(!estudiante.entrego()){
+            estudiante.resolverEjercicio(NroEjercicio, res, examenCanonico);
 
-        if (res == examenCanonico[NroEjercicio]) {
-            estudiantesPorNota.actualizarPrioridad(estudiante);
+            if (res == examenCanonico[NroEjercicio]) {
+                estudiantesPorNota.actualizarPrioridad(estudiante);
+            }
         }
     }
 
@@ -250,13 +258,17 @@ public class Edr {
 
 //-------------------------------------------------ENTREGAR-------------------------------------------------------------
 
+
+
     public void entregar(int estudiante) {
         Estudiante est = this.estudiantes[estudiante];
         if (!est.entrego()) {
             est.entregar();
-            this.estudiantesPorNota.desencolar();
+            this.estudiantesPorNota.eliminar(est); // eliminar
         }
     }
+
+    
 
 //-----------------------------------------------------CORREGIR---------------------------------------------------------
 
@@ -275,14 +287,9 @@ public class Edr {
         NotaFinal[] notasFinales = new NotaFinal[colaNotas.size()];
         for (int i = 0; i < notasFinales.length; i++) {
             Estudiante est = colaNotas.desencolar();
-            /*System.out.println("******************");
-            System.out.println("Estudiante id: " + est.obtenerId() + " Nota: " + est.obtenerNota());
-            System.out.println("******************");*/
             NotaFinal notaFinal = new NotaFinal(est.obtenerNota(), est.obtenerId());
             notasFinales[i] = notaFinal;
         }
-
-
 
         return notasFinales;
     }
@@ -302,15 +309,6 @@ public class Edr {
             }
         }
 
-
-        /*System.out.println("----------------------");
-        for (int i = 0; i < cantidades.length; i++) {
-            for (int j = 0; j < cantidades[i].length; j++) {
-                System.out.print(cantidades[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("----------------------");*/
 
         ArrayList<Integer> sospechosos = new ArrayList<>();
         double umbral = 0.25 * (this.E - 1);
@@ -345,4 +343,8 @@ public class Edr {
         }
         return resultado;
     }
+
 }
+
+
+
