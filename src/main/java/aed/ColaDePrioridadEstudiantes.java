@@ -1,25 +1,23 @@
 package aed;
 
 public class ColaDePrioridadEstudiantes {
-    private Estudiante[] heap;
+    private HandleHeap[] heap;
     private int tamaño;
     private int capacidad;
-    private static final int CAPACIDAD_DEFAULT = 0;
 
-    public ColaDePrioridadEstudiantes() {
-        this.capacidad = CAPACIDAD_DEFAULT;
-        this.heap = new Estudiante[CAPACIDAD_DEFAULT];
+    public ColaDePrioridadEstudiantes(int cant_estudiantes) {
+        this.capacidad = cant_estudiantes;
+        this.heap = new HandleHeap[cant_estudiantes];
         this.tamaño = 0;
     }
 
-    public ColaDePrioridadEstudiantes(Estudiante[] elementos) {
+    public ColaDePrioridadEstudiantes(HandleHeap[] elementos) {
         this.tamaño = elementos.length;
-        this.capacidad = max(CAPACIDAD_DEFAULT, this.tamaño);
-        this.heap = new Estudiante[this.capacidad];
+        this.capacidad = elementos.length;
+        this.heap = new HandleHeap[this.capacidad];
 
         for (int i = 0; i < this.tamaño; i++) {
             this.heap[i] = elementos[i];
-            this.heap[i].setearPosicionHeap(i);
         }
 
         int indiceUltimoNoHoja = obtenerIndicePadre(this.tamaño - 1);
@@ -28,24 +26,18 @@ public class ColaDePrioridadEstudiantes {
         }
     }
 
-    private int max(int a, int b) {
-        if (a>b) {
-            return a;
-        }
-        return b;
-    }
-
     private void swap(int i, int j) {
-        Estudiante temp = heap[i];
+        HandleHeap temp = heap[i];
         heap[i] = heap[j];
         heap[j] = temp;
 
-        heap[i].setearPosicionHeap(i);
-        heap[j].setearPosicionHeap(j);
+        heap[i].setearPosicion(i);
+        heap[j].setearPosicion(j);
     }
 
     private void subir(int indice) {
-        Estudiante elemento = heap[indice];
+        HandleHeap handle = heap[indice];
+        Estudiante elemento = handle.estudiante;
         int indicePadre;
 
         boolean sigueSubiendo = true;
@@ -53,7 +45,8 @@ public class ColaDePrioridadEstudiantes {
 
         while (indice > 0 && sigueSubiendo) {
             indicePadre = obtenerIndicePadre(indice);
-            Estudiante padre = heap[indicePadre];
+            HandleHeap handlePadre = heap[indicePadre];
+            Estudiante padre = handlePadre.estudiante;
 
             if (elemento.compareTo(padre) < 0) {
                 swap(indice, indicePadre);
@@ -70,17 +63,22 @@ public class ColaDePrioridadEstudiantes {
 
         while (tieneHijoIzquierdo(indice) && sigueBajando) {
             int menorIndiceHijo = obtenerIndiceHijoIzquierdo(indice);
-            Estudiante hijoIzquierdo = heap[menorIndiceHijo];
+            HandleHeap handleHijoIzquierdo = heap[menorIndiceHijo];
+            Estudiante hijoIzquierdo = handleHijoIzquierdo.estudiante;
 
             if (tieneHijoDerecho(indice)) {
-                Estudiante hijoDerecho = heap[obtenerIndiceHijoDerecho(indice)];
+                HandleHeap handleHijoDerecho = heap[obtenerIndiceHijoDerecho(indice)];
+                Estudiante hijoDerecho = handleHijoDerecho.estudiante;
                 if (hijoDerecho.compareTo(hijoIzquierdo) < 0) {
                     menorIndiceHijo = obtenerIndiceHijoDerecho(indice);
                 }
             }
 
-            Estudiante actual = heap[indice];
-            Estudiante menorHijo = heap[menorIndiceHijo];
+            HandleHeap handleActual = heap[indice];
+            HandleHeap handleMenorHijo = heap[menorIndiceHijo];
+
+            Estudiante actual = handleActual.estudiante;
+            Estudiante menorHijo = handleMenorHijo.estudiante;
 
             if (actual.compareTo(menorHijo) > 0) {
                 swap(indice, menorIndiceHijo);
@@ -91,44 +89,46 @@ public class ColaDePrioridadEstudiantes {
         }
     }
 
-    public void actualizarPrioridad(Estudiante elemento) {
-        int indiceEnHeap = elemento.obtenerPosicionHeap();
+    public void actualizarPrioridad(HandleHeap hestudiante) {
+        this.heap[hestudiante.posicion()] = hestudiante;
+
+        int indiceEnHeap = hestudiante.posicion();
         if (indiceEnHeap < 0 || indiceEnHeap >= tamaño) return;
 
         int indicePadre = obtenerIndicePadre(indiceEnHeap);
 
-        if (indiceEnHeap == 0 || heap[indiceEnHeap].compareTo(heap[indicePadre]) > 0) {
+        if (indiceEnHeap == 0 || heap[indiceEnHeap].estudiante().compareTo(heap[indicePadre].estudiante()) > 0 ) {
             bajar(indiceEnHeap);
         } else {
             subir(indiceEnHeap);
         }
     }
 
-    public void encolar(Estudiante elemento) {
-        asegurarCapacidad();
-
-        heap[tamaño] = elemento;
-        heap[tamaño].setearPosicionHeap(tamaño);
+    public HandleHeap encolar(Estudiante elemento) {
+        HandleHeap hestudiante = new HandleHeap(elemento, tamaño);
+        heap[tamaño] = hestudiante;
         subir(tamaño);
         tamaño++;
+        return hestudiante;
     }
 
     public Estudiante desencolar() {
-        if (!estaVacio()) {
-            Estudiante menorElemento = heap[0];
+        if (!esVacia()) {
+            HandleHeap menorhEstudiante = heap[0];
+            Estudiante menorEstudiante = menorhEstudiante.estudiante();
 
             heap[0] = heap[tamaño - 1];
             heap[tamaño - 1] = null;
             tamaño --;
 
-            if (!estaVacio()) {
-                heap[0].setearPosicionHeap(0);
+            if (!esVacia()) {
+                heap[0].posicion = 0;
                 bajar(0);
             }
 
-            menorElemento.setearPosicionHeap(-1);
+            menorhEstudiante.posicion = -1;
 
-            return menorElemento;
+            return menorEstudiante;
         }
         return null;
         
@@ -139,32 +139,11 @@ public class ColaDePrioridadEstudiantes {
     }
 
     public Estudiante proximo() {
-        return heap[0];
-    }
-
-    public boolean estaVacio() {
-        return tamaño == 0;
+        return heap[0].estudiante();
     }
 
     public int tamaño() {
         return tamaño;
-    }
-
-    private void asegurarCapacidad() {
-        if (tamaño == capacidad) {
-            int nuevaCapacidad = 1;
-            if (capacidad != 0) {
-                nuevaCapacidad = capacidad * 2;
-            }
-
-
-            Estudiante[] nuevoHeap = new Estudiante[nuevaCapacidad];
-            for (int i = 0; i < tamaño; i++) {
-                nuevoHeap[i] = heap[i];
-            }
-            heap = nuevoHeap;
-            capacidad = nuevaCapacidad;
-        }
     }
 
 
@@ -192,7 +171,7 @@ public class ColaDePrioridadEstudiantes {
 
             if (posicionActual < tamaño){
                 int padre = obtenerIndicePadre(posicionActual);
-                if (posicionActual > 0 && heap[posicionActual].compareTo(heap[padre]) < 0){
+                if (posicionActual > 0 && heap[posicionActual].estudiante().compareTo(heap[padre].estudiante()) < 0){
                     subir(posicionActual);
                 }
                 else{
@@ -204,6 +183,28 @@ public class ColaDePrioridadEstudiantes {
         
         // eliminar la posición del heap
         est.setearPosicionHeap(-1);
+    }
+
+    public static class HandleHeap implements Handle {
+        private Estudiante estudiante;
+        private int posicion;
+
+        public HandleHeap (Estudiante e, int p) {
+            this.estudiante = e;
+            this.posicion = p;
+        }
+
+        private void setearPosicion(int p) {
+            this.posicion = p;
+        }
+
+        public Estudiante estudiante() {
+            return estudiante;
+        }
+
+        public int posicion() {
+            return posicion;
+        }
     }
 
 

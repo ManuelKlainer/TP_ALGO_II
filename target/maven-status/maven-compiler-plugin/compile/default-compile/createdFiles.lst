@@ -1,5 +1,7 @@
 aed\NotaFinal.class
 aed\Edr.class
 aed\ColaDePrioridadEstudiantes.class
+aed\ColaDePrioridadEstudiantes$HandleHeap.class
 aed\Estudiante.class
+aed\Handle.class
 aed\ColaDePrioridadNota.class

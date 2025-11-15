@@ -1,11 +1,13 @@
 package aed;
 import java.util.ArrayList;
 
+import aed.ColaDePrioridadEstudiantes.HandleHeap;
+
 public class Edr {
 
-    public Estudiante[] estudiantes;
+    public ColaDePrioridadEstudiantes.HandleHeap[] estudiantes;
     private ColaDePrioridadEstudiantes estudiantesPorNota;
-    private Estudiante[][] aula;
+    private ColaDePrioridadEstudiantes.HandleHeap[][] aula;
     private int[] examenCanonico;
     private boolean[] copiones;
     private final int LadoAula;
@@ -17,8 +19,8 @@ public class Edr {
         this.E = Cant_estudiantes;
         this.R = ExamenCanonico.length;
 
-        this.estudiantes = new Estudiante[Cant_estudiantes];
-        this.aula = new Estudiante[LadoAula][LadoAula];
+        this.estudiantes = new ColaDePrioridadEstudiantes.HandleHeap[Cant_estudiantes];
+        this.aula = new ColaDePrioridadEstudiantes.HandleHeap[LadoAula][LadoAula];
         this.examenCanonico = new int[this.R];
 
         for (int i = 0; i < this.R; i++) { // -- O(R)
@@ -39,8 +41,10 @@ public class Edr {
             est.setearColumna(col);
             est.setearNota(0.0);
 
-            this.estudiantes[i] = est;
-            this.aula[fila][col] = est;
+            ColaDePrioridadEstudiantes.HandleHeap hest = new ColaDePrioridadEstudiantes.HandleHeap(est,i);
+
+            this.estudiantes[i] = hest;
+            this.aula[fila][col] = hest;
         }
 
         this.estudiantesPorNota = new ColaDePrioridadEstudiantes(this.estudiantes);
@@ -51,7 +55,7 @@ public class Edr {
     public double[] notas() {
         double[] notas = new double[this.E];
         for (int i = 0; i < this.E; i++) { // O(E)
-            notas[i] = this.estudiantes[i].obtenerNota();
+            notas[i] = this.estudiantes[i].estudiante().obtenerNota();
         }
         return notas;
     }
@@ -62,7 +66,8 @@ public class Edr {
 
 
     public void copiarse(int id_estudiante) {
-        Estudiante estudiante = this.estudiantes[id_estudiante];
+        ColaDePrioridadEstudiantes.HandleHeap hestudiante = this.estudiantes[id_estudiante];
+        Estudiante estudiante = hestudiante.estudiante();
         //System.out.println("-----------------");
         //System.out.println("Estudiante: " + estudiante.id);
         //System.out.println("Fila: " + estudiante.fila);
@@ -75,6 +80,10 @@ public class Edr {
         int colVecino3 = estudiante.obtenerColumna();
 
 
+
+        ColaDePrioridadEstudiantes.HandleHeap hVecino1 = null;
+        ColaDePrioridadEstudiantes.HandleHeap hVecino2 = null;
+        ColaDePrioridadEstudiantes.HandleHeap hVecino3 = null;
         Estudiante vecino1 = null;
         Estudiante vecino2 = null;
         Estudiante vecino3 = null;
@@ -99,7 +108,8 @@ public class Edr {
         //System.out.println(filaVecino5 + "," + colVecino5);
 
         if (0 <= filaVecino1 && filaVecino1 < this.LadoAula && 0 <= colVecino1 && colVecino1 < this.LadoAula) {
-            vecino1 = this.aula[filaVecino1][colVecino1];
+            hVecino1 = this.aula[filaVecino1][colVecino1];
+            vecino1 = hVecino1.estudiante();
             /*if (vecino1 != null) {
                 //System.out.println("Vecino 1: " + vecino1.id);
             } else {
@@ -107,7 +117,8 @@ public class Edr {
             }*/
         }
         if (0 <= filaVecino2 && filaVecino2 < this.LadoAula && 0 <= colVecino2 && colVecino2 < this.LadoAula) {
-            vecino2 = this.aula[filaVecino2][colVecino2];
+            hVecino2 = this.aula[filaVecino2][colVecino2];
+            vecino2 = hVecino2.estudiante();
             /*if (vecino2 != null) {
                 //System.out.println("Vecino 2: " + vecino2.id);
             } else {
@@ -115,7 +126,8 @@ public class Edr {
             }*/
         }
         if (0 <= filaVecino3 && filaVecino3 < this.LadoAula && 0 <= colVecino3 && colVecino3 < this.LadoAula) {
-            vecino3 = this.aula[filaVecino3][colVecino3];
+            hVecino3 = this.aula[filaVecino3][colVecino3];
+            vecino3 = hVecino3.estudiante();
             /*if (vecino3 != null) {
                 //System.out.println("Vecino 3: " + vecino3.id);
             } else {
@@ -126,6 +138,7 @@ public class Edr {
         int[] respuestasCopiablesVecinos = new int[3];
         int[] primerRespuestaCopiableVecinos = new int[3];
         Estudiante[] vecinos = new Estudiante[3];
+        ColaDePrioridadEstudiantes.HandleHeap[] hvecinos = new ColaDePrioridadEstudiantes.HandleHeap[3];
 
         primerRespuestaCopiableVecinos[0] = -1; primerRespuestaCopiableVecinos[1] = -1; primerRespuestaCopiableVecinos[2] = -1;
         respuestasCopiablesVecinos[0] = 0; respuestasCopiablesVecinos[1] = 0; respuestasCopiablesVecinos[2] = 0;
@@ -134,16 +147,19 @@ public class Edr {
         int[] examenVecino1 = null;
         if (vecino1 != null) {
             vecinos[0] = vecino1;
+            hvecinos[0] = hVecino1;
             examenVecino1 = vecino1.obtenerExamen();
         }
         int[] examenVecino2 = null;
         if (vecino2 != null) {
             vecinos[1] = vecino2;
+            hvecinos[1] = hVecino2;
             examenVecino2 = vecino2.obtenerExamen();
         }
         int[] examenVecino3 = null;
         if (vecino3 != null) {
             vecinos[2] = vecino3;
+            hvecinos[2] = hVecino3;
             examenVecino3 = vecino3.obtenerExamen();
         }
 
@@ -173,17 +189,17 @@ public class Edr {
 
         int maxRespuestasCopiables = 0;
         int indMejorVecino = -1;
-        if (respuestasCopiablesVecinos[2] > maxRespuestasCopiables) {
-            maxRespuestasCopiables = respuestasCopiablesVecinos[2];
-            indMejorVecino = 2;
+        if (respuestasCopiablesVecinos[1] > maxRespuestasCopiables) {
+            maxRespuestasCopiables = respuestasCopiablesVecinos[1];
+            indMejorVecino = 1;
         }
-        if (respuestasCopiablesVecinos[0] > maxRespuestasCopiables ||  (vecino1 != null && maxRespuestasCopiables != 0 && respuestasCopiablesVecinos[0] == maxRespuestasCopiables && vecinos[0].obtenerId() > vecinos[indMejorVecino].obtenerId())) {
+        if (respuestasCopiablesVecinos[0] > maxRespuestasCopiables) {
             maxRespuestasCopiables = respuestasCopiablesVecinos[0];
             indMejorVecino = 0;
         }
-        if (respuestasCopiablesVecinos[1] > maxRespuestasCopiables ||  (vecino2 != null && maxRespuestasCopiables != 0 && respuestasCopiablesVecinos[1] == maxRespuestasCopiables && vecinos[1].obtenerId() > vecinos[indMejorVecino].obtenerId())) {
-            maxRespuestasCopiables = respuestasCopiablesVecinos[1];
-            indMejorVecino = 1;
+        if (respuestasCopiablesVecinos[2] > maxRespuestasCopiables) {
+            maxRespuestasCopiables = respuestasCopiablesVecinos[2];
+            indMejorVecino = 2;
         }
         
         // --------------------------------------    
@@ -205,7 +221,7 @@ public class Edr {
         estudiante.resolverEjercicio(indicePreguntaACopiar, respuestaCopiada, examenCanonico);
 
         if (respuestaCopiada == examenCanonico[indicePreguntaACopiar]) {
-            estudiantesPorNota.actualizarPrioridad(estudiante);
+            estudiantesPorNota.actualizarPrioridad(hestudiante);
         }
     }
 
@@ -217,12 +233,13 @@ public class Edr {
 
 
     public void resolver(int id_estudiante, int NroEjercicio, int res) {
-        Estudiante estudiante = this.estudiantes[id_estudiante];
+        HandleHeap hestudiante = this.estudiantes[id_estudiante];
+        Estudiante estudiante = hestudiante.estudiante();
         if(!estudiante.entrego()){
             estudiante.resolverEjercicio(NroEjercicio, res, examenCanonico);
 
             if (res == examenCanonico[NroEjercicio]) {
-                estudiantesPorNota.actualizarPrioridad(estudiante);
+                estudiantesPorNota.actualizarPrioridad(hestudiante);
             }
         }
     }
@@ -238,9 +255,8 @@ public class Edr {
             Estudiante est = this.estudiantesPorNota.desencolar();
             if (est != null && !est.entrego()) { // Podríamos sacarlo ya que si entregó, no está en la cola
                 estudiantesConsultantes.add(est);
-            } else if (est != null && est.entrego()) {
-                i--; // no contar este estudiante
-                this.estudiantesPorNota.encolar(est);
+            } else {
+                i--;
             }
         }
 
@@ -252,6 +268,8 @@ public class Edr {
         for (int i = 0; i < estudiantesConsultantes.size(); i++) {
             Estudiante est = estudiantesConsultantes.get(i);
             this.estudiantesPorNota.encolar(est);
+            /*ColaDePrioridadEstudiantes.HandleHeap hest =  this.estudiantesPorNota.encolar(est);
+            this.estudiantes[est.obtenerId()] = hest;*/
         }
     }
  
@@ -261,7 +279,8 @@ public class Edr {
 
 
     public void entregar(int estudiante) {
-        Estudiante est = this.estudiantes[estudiante];
+        HandleHeap hest = this.estudiantes[estudiante];
+        Estudiante est = hest.estudiante();
         if (!est.entrego()) {
             est.entregar();
             this.estudiantesPorNota.eliminar(est); // eliminar
@@ -278,7 +297,8 @@ public class Edr {
 
         ColaDePrioridadNota colaNotas = new ColaDePrioridadNota(this.E, false); // max-heap
         for (int i = 0; i < this.E; i++) {
-            Estudiante est = this.estudiantes[i];
+            HandleHeap hest = this.estudiantes[i];
+            Estudiante est = hest.estudiante();
             if (!esCopion[i] && est.entrego()) {
                 colaNotas.encolar(est);
             }
@@ -300,7 +320,8 @@ public class Edr {
         this.copiones = new boolean[this.E];
         int[][] cantidades = new int[this.R][10];
         for (int i = 0; i < this.E; i++) {
-            Estudiante est = this.estudiantes[i];
+            HandleHeap hest = this.estudiantes[i];
+            Estudiante est = hest.estudiante();
             int[] examenEst = est.obtenerExamen();
             for (int j = 0; j < this.R; j++) {
                 if (examenEst[j] != -1) {
@@ -317,7 +338,8 @@ public class Edr {
         }
 
         for (int id = 0; id < this.E; id++) {
-            Estudiante est = this.estudiantes[id];
+            HandleHeap hest = this.estudiantes[id];
+            Estudiante est = hest.estudiante();
             int[] examenEst = est.obtenerExamen();
             boolean esSospechoso = true;
             boolean resolvioAlguno = false;
