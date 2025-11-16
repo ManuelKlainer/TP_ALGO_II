@@ -14,16 +14,28 @@ public class ColaDePrioridadEstudiantes {
     public ColaDePrioridadEstudiantes(HandleHeap[] elementos) {
         this.tamaño = elementos.length;
         this.capacidad = elementos.length;
-        this.heap = new HandleHeap[this.capacidad];
+        this.heap = new HandleHeap[this.capacidad]; // -- O(E)
 
-        for (int i = 0; i < this.tamaño; i++) {
+        for (int i = 0; i < this.tamaño; i++) { // -- O(E)
             this.heap[i] = elementos[i];
+
+            this.heap[i].setearPosicion(i);
+            this.heap[i].estudiante().setearPosicionHeap(i);
         }
 
         int indiceUltimoNoHoja = obtenerIndicePadre(this.tamaño - 1);
         for (int i = indiceUltimoNoHoja; i >= 0; i--) {
             bajar(i);
-        }
+        } // -- O(E log E) a priori pero es O(E)
+        /*
+        Si tenemos un heap con E elementos, la cantidad de nodos en cada nivel del heap disminuye exponencialmente a medida que nos acercamos a la raíz.
+        En el nivel más bajo (las hojas), hay aproximadamente E/2 nodos, en el siguiente nivel hay E/4 nodos, luego E/8, y así sucesivamente, hasta llegar a la raíz.
+        El costo de bajar un nodo depende de su profundidad en el heap. Los nodos más cercanos a las hojas tienen menos niveles para bajar, mientras que los nodos más cercanos a la raíz tienen más niveles.
+        Por lo tanto, el costo total de construir el heap se puede expresar como la suma del costo de bajar cada nodo, ponderado por la cantidad de nodos en cada nivel.
+        Esto nos lleva a la serie:
+        (E/4)×1 + (E/8)×2 + (E/16)×3 + ... + 1×log(E)
+        Esta serie converge a O(E) debido a que la suma ponderada lleva a una variante de la serie geométrica.
+        */
     }
 
     private void swap(int i, int j) {
@@ -33,6 +45,9 @@ public class ColaDePrioridadEstudiantes {
 
         heap[i].setearPosicion(i);
         heap[j].setearPosicion(j);
+
+        heap[i].estudiante().setearPosicionHeap(i);
+        heap[j].estudiante().setearPosicionHeap(j);
     }
 
     private void subir(int indice) {
@@ -55,7 +70,7 @@ public class ColaDePrioridadEstudiantes {
                 sigueSubiendo = false;
             }
         }
-    }
+    } // -- O(log E)
 
     private void bajar(int indice) {
         boolean sigueBajando = true;
@@ -87,7 +102,7 @@ public class ColaDePrioridadEstudiantes {
                 sigueBajando = false;
             }
         }
-    }
+    } // -- O(log E)
 
     public void actualizarPrioridad(HandleHeap hestudiante) {
         this.heap[hestudiante.posicion()] = hestudiante;
@@ -98,19 +113,20 @@ public class ColaDePrioridadEstudiantes {
         int indicePadre = obtenerIndicePadre(indiceEnHeap);
 
         if (indiceEnHeap == 0 || heap[indiceEnHeap].estudiante().compareTo(heap[indicePadre].estudiante()) > 0 ) {
-            bajar(indiceEnHeap);
+            bajar(indiceEnHeap); // -- O(log E)
         } else {
-            subir(indiceEnHeap);
+            subir(indiceEnHeap); // -- O(log E)
         }
-    }
+    } // -- O(log E)
 
     public HandleHeap encolar(Estudiante elemento) {
         HandleHeap hestudiante = new HandleHeap(elemento, tamaño);
         heap[tamaño] = hestudiante;
-        subir(tamaño);
+        elemento.setearPosicionHeap(tamaño);
+        subir(tamaño); // -- O(log E)
         tamaño++;
         return hestudiante;
-    }
+    } // -- O(log E)
 
     public Estudiante desencolar() {
         if (!esVacia()) {
@@ -122,17 +138,19 @@ public class ColaDePrioridadEstudiantes {
             tamaño --;
 
             if (!esVacia()) {
-                heap[0].posicion = 0;
-                bajar(0);
+                heap[0].setearPosicion(0);
+                heap[0].estudiante().setearPosicionHeap(0);
+                bajar(0); // -- O(log E)
             }
 
-            menorhEstudiante.posicion = -1;
+            menorhEstudiante.setearPosicion(-1);
+            menorhEstudiante.estudiante().setearPosicionHeap(-1);
 
             return menorEstudiante;
         }
         return null;
         
-    }
+    } // -- O(log E)
 
     public boolean esVacia() {
         return tamaño == 0;
@@ -155,6 +173,8 @@ public class ColaDePrioridadEstudiantes {
         // bordes para que no pase nada raro
         if (posicionActual < 0 || posicionActual >= tamaño){return;}
 
+        HandleHeap handleDelEliminado = heap[posicionActual];
+
         // si la posición está tan abajo se elimina direcctamente 
         if (posicionActual == tamaño - 1){
             heap[tamaño - 1] = null;
@@ -172,18 +192,21 @@ public class ColaDePrioridadEstudiantes {
             if (posicionActual < tamaño){
                 int padre = obtenerIndicePadre(posicionActual);
                 if (posicionActual > 0 && heap[posicionActual].estudiante().compareTo(heap[padre].estudiante()) < 0){
-                    subir(posicionActual);
+                    subir(posicionActual); // -- O(log E)
                 }
                 else{
-                    bajar(posicionActual);
+                    bajar(posicionActual); // -- O(log E)
                 }
                 
             }
         }
         
+
+
         // eliminar la posición del heap
         est.setearPosicionHeap(-1);
-    }
+        handleDelEliminado.setearPosicion(-1);
+    } // -- O(log E)
 
     public static class HandleHeap implements Handle {
         private Estudiante estudiante;

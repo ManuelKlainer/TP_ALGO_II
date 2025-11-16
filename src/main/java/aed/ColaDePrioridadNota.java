@@ -8,12 +8,12 @@ public class ColaDePrioridadNota {
     public ColaDePrioridadNota(int capacidad){
         this.heap =  new Estudiante[capacidad];
         this.size = 0;
-    }
+    } // O(E)
 
     public ColaDePrioridadNota(int capacidad, boolean esMinHeap){
         this.heap =  new Estudiante[capacidad];
         this.size = 0;
-    }
+    } // O(E)
 
     public boolean esVacia(){
         return size == 0;
@@ -69,8 +69,8 @@ public class ColaDePrioridadNota {
         while (i > 0 && mayorPrioridad(heap[i], heap[parent(i)])){
             swap(i, parent(i));
             i = parent(i);
-        }
-    }
+        } // -- O(log E) -- Ya que en el peor caso hay que ir desde una hoja a la raíz, haciendo log E swaps de O(1)
+    } // O(log E)
 
     public Estudiante desencolar(){
         if (esVacia()) return null;

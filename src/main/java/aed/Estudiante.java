@@ -8,7 +8,7 @@ public class Estudiante implements Comparable<Estudiante> {
     private int posicionHeap;
     private int fila, columna;
 
-    public Estudiante(int id, int cantidadEjercicios) {
+        public Estudiante(int id, int cantidadEjercicios) { // -- O(R)
         this.id = id;
         this.nota = 0.0;
         this.examen = new int[cantidadEjercicios];
@@ -75,7 +75,7 @@ public class Estudiante implements Comparable<Estudiante> {
     public void reemplazarExamen(int[] nuevoExamen, int[] examenCanonico) {
         this.cantidadResueltos = 0;
         this.nota = 0.0;
-        for (int i = 0; i < examen.length; i++) {
+        for (int i = 0; i < examen.length; i++) { // -- O(R)
             if (nuevoExamen[i] != -1) {
                 this.examen[i] = nuevoExamen[i];
                 this.cantidadResueltos++;
@@ -86,9 +86,9 @@ public class Estudiante implements Comparable<Estudiante> {
                 this.examen[i] = -1;
             }
         }
-    }
+    } // -- O(R)
 
-    public void resolverEjercicio(int indiceEjercicio, int respuesta, int[] examenCanonico) {
+    public void resolverEjercicio(int indiceEjercicio, int respuesta, int[] examenCanonico) { // -- O(1)
         if (examen[indiceEjercicio] == -1) {
             examen[indiceEjercicio] = respuesta;
             cantidadResueltos++;

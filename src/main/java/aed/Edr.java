@@ -19,16 +19,16 @@ public class Edr {
         this.E = Cant_estudiantes;
         this.R = ExamenCanonico.length;
 
-        this.estudiantes = new ColaDePrioridadEstudiantes.HandleHeap[Cant_estudiantes];
+        this.estudiantes = new ColaDePrioridadEstudiantes.HandleHeap[Cant_estudiantes]; // -- O(E)
         this.aula = new ColaDePrioridadEstudiantes.HandleHeap[LadoAula][LadoAula];
-        this.examenCanonico = new int[this.R];
+        this.examenCanonico = new int[this.R]; // -- O(R)
 
         for (int i = 0; i < this.R; i++) { // -- O(R)
             this.examenCanonico[i] = ExamenCanonico[i];
         }
 
         for (int i = 0; i < Cant_estudiantes; i++) { // -- O(E)
-            Estudiante est = new Estudiante(i, this.R);
+            Estudiante est = new Estudiante(i, this.R); // -- O(R)
 
 
             int estudiantesPorFila = (LadoAula + 1) / 2;
@@ -44,21 +44,21 @@ public class Edr {
             ColaDePrioridadEstudiantes.HandleHeap hest = new ColaDePrioridadEstudiantes.HandleHeap(est,i);
 
             this.estudiantes[i] = hest;
-            this.aula[fila][col] = hest;
+            this.aula[fila][col] = hest; 
         }
 
-        this.estudiantesPorNota = new ColaDePrioridadEstudiantes(this.estudiantes);
-    }
+        this.estudiantesPorNota = new ColaDePrioridadEstudiantes(this.estudiantes); // -- O(E)
+    } // O(E*R)
 
 //-------------------------------------------------NOTAS--------------------------------------------------------------------------
 
     public double[] notas() {
-        double[] notas = new double[this.E];
-        for (int i = 0; i < this.E; i++) { // O(E)
+        double[] notas = new double[this.E]; // -- O(E)
+        for (int i = 0; i < this.E; i++) { // -- O(E)
             notas[i] = this.estudiantes[i].estudiante().obtenerNota();
         }
         return notas;
-    }
+    } // O(E)
 
 //------------------------------------------------COPIARSE------------------------------------------------------------------------
 
@@ -68,10 +68,8 @@ public class Edr {
     public void copiarse(int id_estudiante) {
         ColaDePrioridadEstudiantes.HandleHeap hestudiante = this.estudiantes[id_estudiante];
         Estudiante estudiante = hestudiante.estudiante();
-        //System.out.println("-----------------");
-        //System.out.println("Estudiante: " + estudiante.id);
-        //System.out.println("Fila: " + estudiante.fila);
-        //System.out.println("Columna: " + estudiante.col);
+        
+        
         int filaVecino1 = estudiante.obtenerFila();
         int colVecino1 = estudiante.obtenerColumna() - 2;
         int filaVecino2 = estudiante.obtenerFila();
@@ -88,51 +86,20 @@ public class Edr {
         Estudiante vecino2 = null;
         Estudiante vecino3 = null;
 
-        /*//System.out.println("Aula");
-        for (int i = 0; i < this.aula.length; i++) {
-            for (int j = 0; j < this.aula[i].length; j++) {
-                if (this.aula[i][j] != null) {
-                    //System.out.print(this.aula[i][j].id + " ");
-                } else {
-                    //System.out.print("X ");
-                }
-            }
-            //System.out.println();
-        }*/
-        
-
-        //System.out.println(filaVecino1 + "," + colVecino1);
-        //System.out.println(filaVecino2 + "," + colVecino2);
-        //System.out.println(filaVecino3 + "," + colVecino3);
-        //System.out.println(filaVecino4 + "," + colVecino4);
-        //System.out.println(filaVecino5 + "," + colVecino5);
-
         if (0 <= filaVecino1 && filaVecino1 < this.LadoAula && 0 <= colVecino1 && colVecino1 < this.LadoAula) {
             hVecino1 = this.aula[filaVecino1][colVecino1];
             vecino1 = hVecino1.estudiante();
-            /*if (vecino1 != null) {
-                //System.out.println("Vecino 1: " + vecino1.id);
-            } else {
-                //System.out.println("Vecino 1: null");
-            }*/
         }
         if (0 <= filaVecino2 && filaVecino2 < this.LadoAula && 0 <= colVecino2 && colVecino2 < this.LadoAula) {
             hVecino2 = this.aula[filaVecino2][colVecino2];
-            vecino2 = hVecino2.estudiante();
-            /*if (vecino2 != null) {
-                //System.out.println("Vecino 2: " + vecino2.id);
-            } else {
-                //System.out.println("Vecino 2: null");
-            }*/
+            if (hVecino2 != null) { 
+                // agregamos este if, porque dado que la última fila puede no llenar su capacidad, un estudiante puede no tener a su derecha a nadie aunque esté en rango
+                vecino2 = hVecino2.estudiante();
+            }
         }
         if (0 <= filaVecino3 && filaVecino3 < this.LadoAula && 0 <= colVecino3 && colVecino3 < this.LadoAula) {
             hVecino3 = this.aula[filaVecino3][colVecino3];
             vecino3 = hVecino3.estudiante();
-            /*if (vecino3 != null) {
-                //System.out.println("Vecino 3: " + vecino3.id);
-            } else {
-                //System.out.println("Vecino 3: null");
-            }*/
         }
 
         int[] respuestasCopiablesVecinos = new int[3];
@@ -164,7 +131,7 @@ public class Edr {
         }
 
 
-        for (int i = 0; i < this.R; i++) {
+        for (int i = 0; i < this.R; i++) { // -- O(R)
             if (examenEstudiante[i] == -1) {
                 if (vecino1 != null && !vecino1.entrego() && examenVecino1[i] != -1) {
                     respuestasCopiablesVecinos[0]++;
@@ -218,12 +185,12 @@ public class Edr {
             respuestaCopiada = examenVecino3[indicePreguntaACopiar];
         }
 
-        estudiante.resolverEjercicio(indicePreguntaACopiar, respuestaCopiada, examenCanonico);
+        estudiante.resolverEjercicio(indicePreguntaACopiar, respuestaCopiada, examenCanonico); // -- O(1)
 
         if (respuestaCopiada == examenCanonico[indicePreguntaACopiar]) {
-            estudiantesPorNota.actualizarPrioridad(hestudiante);
+            estudiantesPorNota.actualizarPrioridad(hestudiante); // -- O(log E)
         }
-    }
+    } // -- O(R + log E)
 
 
 
@@ -239,39 +206,37 @@ public class Edr {
             estudiante.resolverEjercicio(NroEjercicio, res, examenCanonico);
 
             if (res == examenCanonico[NroEjercicio]) {
-                estudiantesPorNota.actualizarPrioridad(hestudiante);
+                estudiantesPorNota.actualizarPrioridad(hestudiante); // -- O(log E)
             }
         }
-    }
+    } // -- O(log E)
 
 
 
 //------------------------------------------------CONSULTAR DARK WEB-------------------------------------------------------
 
-    public void consultarDarkWeb(int n, int[] examenDW) {
+    public void consultarDarkWeb(int k, int[] examenDW) {
         ArrayList<Estudiante> estudiantesConsultantes = new ArrayList<>();
 
-        for (int i = 0; i < n && !this.estudiantesPorNota.esVacia(); i++) {
-            Estudiante est = this.estudiantesPorNota.desencolar();
-            if (est != null && !est.entrego()) { // Podríamos sacarlo ya que si entregó, no está en la cola
-                estudiantesConsultantes.add(est);
-            } else {
-                i--;
+        for (int i = 0; i < k && !this.estudiantesPorNota.esVacia(); i++) {
+            Estudiante est = this.estudiantesPorNota.desencolar(); // -- O(log E)
+            if (est != null) {
+                estudiantesConsultantes.add(est); // -- O(1)
             }
-        }
+        } // -- O(k log E)
 
         for (int i = 0; i < estudiantesConsultantes.size(); i++) {
             Estudiante est = estudiantesConsultantes.get(i);
-            est.reemplazarExamen(examenDW, examenCanonico);
-        }
+            est.reemplazarExamen(examenDW, examenCanonico); // -- O(R)
+        } // -- O(kR)
 
         for (int i = 0; i < estudiantesConsultantes.size(); i++) {
             Estudiante est = estudiantesConsultantes.get(i);
-            this.estudiantesPorNota.encolar(est);
+            this.estudiantesPorNota.encolar(est); // -- O(log E)
             /*ColaDePrioridadEstudiantes.HandleHeap hest =  this.estudiantesPorNota.encolar(est);
             this.estudiantes[est.obtenerId()] = hest;*/
-        }
-    }
+        } // -- O(k log E)
+    } // -- O(k (R + log E))
  
 
 //-------------------------------------------------ENTREGAR-------------------------------------------------------------
@@ -283,9 +248,9 @@ public class Edr {
         Estudiante est = hest.estudiante();
         if (!est.entrego()) {
             est.entregar();
-            this.estudiantesPorNota.eliminar(est); // eliminar
+            this.estudiantesPorNota.eliminar(est); // -- O(log E)
         }
-    }
+    } // -- O(log E)
 
     
 
@@ -295,35 +260,35 @@ public class Edr {
 
         boolean[] esCopion = this.copiones;
 
-        ColaDePrioridadNota colaNotas = new ColaDePrioridadNota(this.E, false); // max-heap
+        ColaDePrioridadNota colaNotas = new ColaDePrioridadNota(this.E, false); // max-heap     O(E)
         for (int i = 0; i < this.E; i++) {
             HandleHeap hest = this.estudiantes[i];
             Estudiante est = hest.estudiante();
             if (!esCopion[i] && est.entrego()) {
-                colaNotas.encolar(est);
+                colaNotas.encolar(est); // O(log E)
             }
-        }
+        } // O (E log E)
 
-        NotaFinal[] notasFinales = new NotaFinal[colaNotas.size()];
+        NotaFinal[] notasFinales = new NotaFinal[colaNotas.size()]; // O(E)
         for (int i = 0; i < notasFinales.length; i++) {
-            Estudiante est = colaNotas.desencolar();
+            Estudiante est = colaNotas.desencolar(); // O (log E)
             NotaFinal notaFinal = new NotaFinal(est.obtenerNota(), est.obtenerId());
             notasFinales[i] = notaFinal;
-        }
+        } // O (E log E)
 
         return notasFinales;
-    }
+    } // O (E log E)
 
 //-------------------------------------------------------CHEQUEAR COPIAS-------------------------------------------------
 
     public int[] chequearCopias() {
         this.copiones = new boolean[this.E];
         int[][] cantidades = new int[this.R][10];
-        for (int i = 0; i < this.E; i++) {
+        for (int i = 0; i < this.E; i++) {//O(E)
             HandleHeap hest = this.estudiantes[i];
-            Estudiante est = hest.estudiante();
-            int[] examenEst = est.obtenerExamen();
-            for (int j = 0; j < this.R; j++) {
+            Estudiante est = hest.estudiante();//O(1)
+            int[] examenEst = est.obtenerExamen();//O(1)
+            for (int j = 0; j < this.R; j++) {//O(R)
                 if (examenEst[j] != -1) {
                     cantidades[j][examenEst[j]]++;
                 }
@@ -337,14 +302,14 @@ public class Edr {
             umbral = 0;
         }
 
-        for (int id = 0; id < this.E; id++) {
+        for (int id = 0; id < this.E; id++) {//O(E)
             HandleHeap hest = this.estudiantes[id];
             Estudiante est = hest.estudiante();
             int[] examenEst = est.obtenerExamen();
             boolean esSospechoso = true;
             boolean resolvioAlguno = false;
 
-            for (int ej = 0; ej < this.R && esSospechoso; ej++) {
+            for (int ej = 0; ej < this.R && esSospechoso; ej++) {//O(R)
                 int resp = examenEst[ej];
                 if (resp != -1) {
                     resolvioAlguno = true;
@@ -360,11 +325,13 @@ public class Edr {
             }
         }
         int[] resultado = new int[sospechosos.size()];
-        for (int i = 0; i < resultado.length; i++) {
+        for (int i = 0; i < resultado.length; i++) {//O(R)
             resultado[i] = sospechosos.get(i);
         }
         return resultado;
     }
+    //O(E*R + E*R + R ) = O(2*E*R) = O(E*R)
+
 
 }
 
